@@ -10,6 +10,8 @@ import os
 from settings import *
 
 def play_sound(stop_id):
+	if DEBUG:
+		print 'playing sound for %s' % stop_id
 	try:
 		if STOPS_AND_THEIR_SOUND_FILES[stop_id]['type']=='mp3':
 			envoy.run('mpg321 %s' % (STOPS_AND_THEIR_SOUND_FILES[stop_id]['path']))
@@ -42,6 +44,9 @@ def main():
 
 	while True:
 		for (stop_id, ct) in check_times.items():
+			
+			played_sound = False
+
 			if time.time()>ct:
 				if DEBUG:
 					print 'checking times for stop %s' % stop_id
@@ -54,12 +59,16 @@ def main():
 					for p in predictions:
 						if p.seconds<PLAY_SOUND_IF_BUS_IS_LESS_THAN_THIS_MANY_SECONDS_AWAY:
 							play_sound(stop_id)
+							played_sound = True
 						shortest_time = min(shortest_time, p.seconds)
 
 					if shortest_time>180:
 						check_times[stop_id] = time.time() + (shortest_time/2)
 					else:
-						check_times[stop_id] = time.time() + 30
+						if played_sound:
+							check_times[stop_id] = time.time() + (PLAY_SOUND_IF_BUS_IS_LESS_THAN_THIS_MANY_SECONDS_AWAY * 2)
+						else:
+							check_times[stop_id] = time.time() + 30
 
 					if DEBUG:
 						print 'will check %s again in %d seconds' % (stop_id, (check_times[stop_id] - time.time()))

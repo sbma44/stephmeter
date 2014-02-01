@@ -34,4 +34,5 @@ nosetests.xml
 .project
 .pydevproject
 
-sounds/*
+sounds/*.mp3
+sounds/*.wav
