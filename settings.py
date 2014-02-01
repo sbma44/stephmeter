@@ -1,16 +1,6 @@
 AGENCY_TAG = 'sf-muni'
-STOP_IDS = [14631, 14632]
-
-#NEXTBUS_URLS = {
-	'42': 'http://www.nextbus.com/predictor/fancyBookmarkablePredictionLayer.shtml?a=wmata&stopId=1002070&r=42&d=42_42_0&s=7611',
-	'43': 'http://www.nextbus.com/predictor/fancyBookmarkablePredictionLayer.shtml?a=wmata&r=43&d=43_43_0&s=7611'
+PLAY_SOUND_IF_BUS_IS_LESS_THAN_THIS_MANY_SECONDS_AWAY = 60
+STOPS_AND_THEIR_SOUND_FILES = {
+	'14631': 'http://www.soundjay.com/misc/bell-ring-01.mp3',
+	'14632': 'http://www.davidmillington.net/trials/mobile-phone/Ring%20Tones/Monkey%20Island%20-%20Banjo%20Loop.wav'
 }
-
-SERIAL_DEVICE = '/dev/ttyAMA0'
-SERIAL_SPEED = 115200
-
-CALIBRATION_FILE = '/home/pi/Devel/stephmeter/calibration.json'
-
-TIMEOUT = 300 # 5 minutes
-
-# NEXTBUS_ROUTES = [42, 43]
