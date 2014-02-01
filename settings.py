@@ -1,4 +1,7 @@
-NEXTBUS_URLS = {
+AGENCY_TAG = 'sf-muni'
+STOP_IDS = [14631, 14632]
+
+#NEXTBUS_URLS = {
 	'42': 'http://www.nextbus.com/predictor/fancyBookmarkablePredictionLayer.shtml?a=wmata&stopId=1002070&r=42&d=42_42_0&s=7611',
 	'43': 'http://www.nextbus.com/predictor/fancyBookmarkablePredictionLayer.shtml?a=wmata&r=43&d=43_43_0&s=7611'
 }
@@ -10,4 +13,4 @@ CALIBRATION_FILE = '/home/pi/Devel/stephmeter/calibration.json'
 
 TIMEOUT = 300 # 5 minutes
 
-NEXTBUS_ROUTES = [42, 43]
+# NEXTBUS_ROUTES = [42, 43]
