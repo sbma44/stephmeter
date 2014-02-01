@@ -16,10 +16,10 @@ def play_sound(stop_id):
 		print 'playing sound for %s' % stop_id
 	try:
 		if STOPS_AND_THEIR_SOUND_FILES[stop_id]['type']=='mp3':
-			envoy.run('mpg321 %s' % (STOPS_AND_THEIR_SOUND_FILES[stop_id]['path']))
+			envoy.run('/usr/bin/mpg321 %s' % (STOPS_AND_THEIR_SOUND_FILES[stop_id]['path']))
 		if STOPS_AND_THEIR_SOUND_FILES[stop_id]['type']=='wav':
-			envoy.run('aplay %s' % (STOPS_AND_THEIR_SOUND_FILES[stop_id]['path']))
-	except:
+			envoy.run('/usr/bin/aplay %s' % (STOPS_AND_THEIR_SOUND_FILES[stop_id]['path']))
+	except Exception, e:
 		print 'attempted to play %s' % STOPS_AND_THEIR_SOUND_FILES[stop_id]['path']
 
 def main():
@@ -34,13 +34,13 @@ def main():
 		STOPS_AND_THEIR_SOUND_FILES[stop_id] = {'sound_file': sound_file}
 		STOPS_AND_THEIR_SOUND_FILES[stop_id]['hash'] = hashlib.sha256(sound_file).hexdigest()
 		STOPS_AND_THEIR_SOUND_FILES[stop_id]['type'] = sound_file.split('.')[-1].lower().strip()
-		STOPS_AND_THEIR_SOUND_FILES[stop_id]['path'] = "%s/sounds/%s.%s" % (os.getcwd(), STOPS_AND_THEIR_SOUND_FILES[stop_id]['hash'], STOPS_AND_THEIR_SOUND_FILES[stop_id]['type'])
+		STOPS_AND_THEIR_SOUND_FILES[stop_id]['path'] = "%s/sounds/%s.%s" % (WORKING_DIRECTORY, STOPS_AND_THEIR_SOUND_FILES[stop_id]['hash'], STOPS_AND_THEIR_SOUND_FILES[stop_id]['type'])
 		if not os.path.exists(STOPS_AND_THEIR_SOUND_FILES[stop_id]['path']):
 			if DEBUG:
 				print 'retrieving %s' % (sound_file)
 			envoy.run('curl "%s" -o "%s"' % (sound_file, STOPS_AND_THEIR_SOUND_FILES[stop_id]['path']))
 
-		check_times[stop_id] = 0
+
 
 
 	while True:
@@ -78,15 +78,14 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
 
-	# try:
-	# 	main()
-	# except Exception, e:
-	# 	raise e
-		# f = open('/var/log/markmograph-crash.log', 'a')
-		# f.write(str(e))
-		# f.close()
+	try:
+		main()
+	except Exception, e:
+		raise e
+		f = open('/var/log/markmograph-crash.log', 'a')
+		f.write(str(e))
+		f.close()
 
-		# os.system('echo "%s" | mail -s "MARKMOGRAPH CRASH LOG" thomas.j.lee@gmail.com' % str(e))
+		os.system('echo "%s" | mail -s "MARKMOGRAPH CRASH LOG" thomas.j.lee@gmail.com' % str(e))
 
