@@ -9,6 +9,8 @@ import sys
 import os
 from settings import *
 
+DEBUG = '--debug' in map(lambda x: x.lower().strip(), sys.argv)
+
 def play_sound(stop_id):
 	if DEBUG:
 		print 'playing sound for %s' % stop_id
@@ -21,7 +23,6 @@ def play_sound(stop_id):
 		print 'attempted to play %s' % STOPS_AND_THEIR_SOUND_FILES[stop_id]['path']
 
 def main():
-	DEBUG = '--debug' in map(lambda x: x.lower().strip(), sys.argv)
 
 	if DEBUG:
 		print 'Entering debug mode...'
