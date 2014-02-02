@@ -39,9 +39,7 @@ def main():
 			if DEBUG:
 				print 'retrieving %s' % (sound_file)
 			envoy.run('curl "%s" -o "%s"' % (sound_file, STOPS_AND_THEIR_SOUND_FILES[stop_id]['path']))
-
-
-
+		check_times[stop_id] = 0
 
 	while True:
 		for (stop_id, ct) in check_times.items():
