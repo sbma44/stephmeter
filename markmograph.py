@@ -49,8 +49,14 @@ def main():
 			if time.time()>ct:
 				if DEBUG:
 					print 'checking times for stop %s' % stop_id
-				predictions = nextbus2.get_predictions_for_stop(AGENCY_TAG, stop_id).predictions
-				
+
+				predictions = None
+				while predictions is None:
+					try:
+						predictions = nextbus2.get_predictions_for_stop(AGENCY_TAG, stop_id).predictions
+					except:
+						time.sleep(60)
+
 				if len(predictions)==0:
 					check_times[stop_id] = time.time() + (10*60)
 				else:
