@@ -92,13 +92,17 @@ class NextbusPredictor(object):
 	def get_closest_arrival(self):
 		return self.get_nth_closest_arrival(0)
 
-	def get_nth_closest_arrival(self, n=0):
+	def get_nth_closest_arrival(self, n=0, route=None):
 		"""Return the (route, arrival) pair that's happening soonest"""
 		arrivals = []
 		for r in self.routes:			
 			if self.predictions.get(r) is not None:			
-				for p in self.predictions.get(r, []):				
-					arrivals.append( (p, r) )
+				for p in self.predictions.get(r, []):
+					valid_route = route is None
+					valid_route = valid_route or ((type(route) in (tuple, list)) and (r in route))
+					valid_route = valid_route or route==r
+					if valid_route:
+						arrivals.append( (p, r) )
 
 		if n>=len(arrivals):
 			return None
