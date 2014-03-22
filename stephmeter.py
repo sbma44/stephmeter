@@ -51,9 +51,9 @@ def main():
 				print 'route is %s, arriving in %d minutes' % (route, minutes)
 			else:
 				if int(route)==43:
-					l.set(50, 100, 50)
+					l.set(5, 100, 5)
 				elif int(route)==42:
-					l.set(50, 50, 100)
+					l.set(5, 5, 100)
 				p.setPWM(minutes)
 
 			time.sleep(3)
