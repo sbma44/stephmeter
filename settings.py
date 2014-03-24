@@ -11,3 +11,13 @@ CALIBRATION_FILE = '/home/pi/Devel/stephmeter/calibration.json'
 TIMEOUT = 300 # 5 minutes
 
 NEXTBUS_ROUTES = [42, 43]
+
+GOODREADS_LOGIN_URL = 'https://www.goodreads.com/user/sign_in'
+GOODREADS_KAY_URL = 'https://www.goodreads.com/review/stats/62698-kay#pages'
+GOODREADS_BEN_URL = 'https://www.goodreads.com/review/stats/980285-ben#pages'
+GOODREADS_TOM_URL = 'https://www.goodreads.com/review/stats/4989865-tom-lee#pages'
+
+try:
+	from local_settings import *
+except:
+	pass
