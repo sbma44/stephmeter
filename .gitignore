@@ -36,3 +36,4 @@ nosetests.xml
 
 local_settings.py
 runkeeper-php/settings.php
+.DS_Store
