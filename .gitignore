@@ -34,4 +34,5 @@ nosetests.xml
 .project
 .pydevproject
 
-.gitignore
+local_settings.py
+runkeeper-php/settings.php
