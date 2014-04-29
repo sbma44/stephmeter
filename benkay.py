@@ -11,6 +11,7 @@ import runkeeper
 import goodreads
 
 import pwm_calibrate
+import tlc5940
 import gaugette.rotary_encoder
 
 from settings import *
@@ -53,6 +54,9 @@ class BenKayMeter(object):
             self.encoder_worker = gaugette.rotary_encoder.RotaryEncoder.Worker(ROTARY_ENCODER_PINS[0], ROTARY_ENCODER_PINS[1])
             self.encoder_worker.start()
 
+            self.tlc = tlc5940.TLC5940(gsclkpin=GSCLKPIN, blankpin=BLANKPIN)
+            self.tlc.writeAllDC(0)
+
             self.led_thread = Thread(set_led, self)
             self.mode_thread = Thread(watch_mode, self)    
 
@@ -60,10 +64,14 @@ class BenKayMeter(object):
         
     def check_mode(self):
         turns = self.encoder_worker.encoder.get_cycles()
+        old_mode = self.current_mode
         self.current_mode = (self.current_mode + turns) % len(self.MODES)    
+        if old_mode!=self.current_mode:
+            print "new mode: %d" % self.current_mode
 
     def set_led(self):
-        pass
+        register = ([0, 0, 0] * self.current_mode) + [63, 63, 63] + ([0, 0, 0] * (len(self.MODES) - (self.current_mode + 1)))
+        self.tlc.writeDC(register)
 
     def main(self):     
 
@@ -110,9 +118,9 @@ if __name__ == '__main__':
     try:
         main()
     except Exception, e:
-        f = open('/var/log/stephmeter-crash.log', 'a')
+        f = open('/var/log/benkaymeter-crash.log', 'a')
         f.write(str(e))
         f.close()
 
-        os.system('echo "%s" | mail -s "STEPHMETER CRASH LOG" thomas.j.lee@gmail.com' % str(e))
+        os.system('echo "%s" | mail -s "BEN/KAY METER CRASH LOG" thomas.j.lee@gmail.com' % str(e))
 

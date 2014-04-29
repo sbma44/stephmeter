@@ -8,8 +8,21 @@ define('TOKENIZATION_URL', 'https://runkeeper.com/apps/token');
 $redirect_url = preg_replace("/\?.*$/i", "", "http" . (!empty($_SERVER['HTTPS'])?"s":"") . "://".$_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
 
 if (!(isset($_GET['code']))){
-	$user = isset($_GET['user']) ? $_GET['user'] : time();
-	header('Location: ' . AUTHORIZATION_URL . '?client_id=' . CLIENT_ID . '&response_type=code&redirect_uri=' . $redirect_url . '&state=' . $user);
+	if (!(isset($_GET['user']))){
+?>
+<html><body>
+	<form method="get">
+		<label for="user">Runkeeper Username:</label>
+		<input type="text" name="user">
+		<input type="submit">
+	</form>
+</body></html>
+<?php		
+	}
+	else{
+		$user = isset($_GET['user']) ? $_GET['user'] : time();
+		header('Location: ' . AUTHORIZATION_URL . '?client_id=' . CLIENT_ID . '&response_type=code&redirect_uri=' . $redirect_url . '&state=' . $user);
+	}
 }
 else {
 	$code = $_GET['code'];
