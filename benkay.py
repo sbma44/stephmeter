@@ -25,18 +25,16 @@ class Thread(threading.Thread):
         self.start()
 
 def watch_mode(meter):
+    encoder = gaugette.rotary_encoder.RotaryEncoder(ROTARYENCODERPIN_A, ROTARYENCODERPIN_B)
     while True:
-	#with lock:
-        meter.check_mode()
-        time.sleep(0.02)
-
-def set_led(meter):
-    while True:
-	#with lock:
-        meter.set_led()
-        time.sleep(0.02)
-
-
+        delta = encoder.get_cycles()
+        if delta!=0:
+            print "rotate %d" % delta
+            old_mode = meter.mode
+            meter.mode = (meter.mode + delta) % len(meter.MODES)
+            if old_mode!=meter.mode:
+                meter.set_led()
+     
 class BenKayMeter(object):
     """ Measures things that Ben & Kay might like """
     
@@ -56,8 +54,8 @@ class BenKayMeter(object):
             #self.p.load()
             #self.p_range = p.get_range()
 
-            self.encoder_worker = gaugette.rotary_encoder.RotaryEncoder.Worker(ROTARYENCODERPIN_A, ROTARYENCODERPIN_B)
-            self.encoder_worker.start()
+            # self.encoder_worker = gaugette.rotary_encoder.RotaryEncoder.Worker(ROTARYENCODERPIN_A, ROTARYENCODERPIN_B)
+            # self.encoder_worker.start()
 
             self.tlc = tlc5940.TLC5940(gsclkpin=GSCLKPIN, blankpin=BLANKPIN)
             self.tlc.writeAllDC(0)
