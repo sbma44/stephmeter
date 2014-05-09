@@ -38,11 +38,11 @@ class TLC5940 (object):
     
     self.gsclkpin = gsclkpin
     self.blankpin = blankpin
-    # self.vprgpin = vprgpin
+    self.vprgpin = vprgpin
     self.gpio = wiringpi.GPIO(wiringpi.GPIO.WPI_MODE_PINS)
     self.gpio.pinMode(self.gsclkpin, self.gpio.OUTPUT)
     self.gpio.pinMode(self.blankpin, self.gpio.OUTPUT)
-    # self.gpio.pinMode(self.vprgpin, self.gpio.OUTPUT)
+    self.gpio.pinMode(self.vprgpin, self.gpio.OUTPUT)
     
     #Init pins for clockless (DC, no PWM) operation only
     logger.info("Initializing TLC5940...")

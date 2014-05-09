@@ -1,4 +1,4 @@
-#!/home/pi/.virtualenvs/benkay/bin/python
+#!/home/pi/.virtualenvs/benkaymeter/bin/python
 
 import time
 import datetime
@@ -21,15 +21,18 @@ lock = threading.Lock()
 class Thread(threading.Thread):
     def __init__(self, t, *args):
         threading.Thread.__init__(self, target=t, args=args)
+        self.setDaemon(True)
         self.start()
 
 def watch_mode(meter):
-    with lock:
+    while True:
+	#with lock:
         meter.check_mode()
-        time.sleep(0.01)
+        time.sleep(0.02)
 
 def set_led(meter):
-    with lock:
+    while True:
+	#with lock:
         meter.set_led()
         time.sleep(0.02)
 
@@ -44,30 +47,35 @@ class BenKayMeter(object):
     
         self.DEBUG = '--debug' in map(lambda x: x.lower().strip(), sys.argv)
 
+        self.current_mode = 0
+
         if self.DEBUG:
             print 'Entering debug mode...'
         else:            
-            self.p = pwm_calibrate.PWMCalibrator(calibration_file=CALIBRATION_FILE, smoothing=True)
-            self.p.load()
-            self.p_range = p.get_range()
+            #self.p = pwm_calibrate.PWMCalibrator(calibration_file=CALIBRATION_FILE, smoothing=True)
+            #self.p.load()
+            #self.p_range = p.get_range()
 
-            self.encoder_worker = gaugette.rotary_encoder.RotaryEncoder.Worker(ROTARY_ENCODER_PINS[0], ROTARY_ENCODER_PINS[1])
+            self.encoder_worker = gaugette.rotary_encoder.RotaryEncoder.Worker(ROTARYENCODERPIN_A, ROTARYENCODERPIN_B)
             self.encoder_worker.start()
 
             self.tlc = tlc5940.TLC5940(gsclkpin=GSCLKPIN, blankpin=BLANKPIN)
             self.tlc.writeAllDC(0)
 
-            self.led_thread = Thread(set_led, self)
+            # self.led_thread = Thread(set_led, self)
             self.mode_thread = Thread(watch_mode, self)    
 
-        self.current_mode = 0
-        
+            self.set_led()        
+
+
     def check_mode(self):
         turns = self.encoder_worker.encoder.get_cycles()
         old_mode = self.current_mode
         self.current_mode = (self.current_mode + turns) % len(self.MODES)    
         if old_mode!=self.current_mode:
             print "new mode: %d" % self.current_mode
+            self.set_led()
+
 
     def set_led(self):
         register = ([0, 0, 0] * self.current_mode) + [63, 63, 63] + ([0, 0, 0] * (len(self.MODES) - (self.current_mode + 1)))
@@ -116,7 +124,9 @@ class BenKayMeter(object):
 
 if __name__ == '__main__':
     try:
-        main()
+        b = BenKayMeter()
+
+        #main()
     except Exception, e:
         f = open('/var/log/benkaymeter-crash.log', 'a')
         f.write(str(e))

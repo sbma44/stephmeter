@@ -1,4 +1,4 @@
-PROJECT_HOME = '/home/pi/Devel/benkay'
+PROJECT_HOME = '/home/pi/Devel/benkaymeter'
 
 NEXTBUS_URLS = {
 	'42': 'http://www.nextbus.com/predictor/fancyBookmarkablePredictionLayer.shtml?a=wmata&stopId=1002070&r=42&d=42_42_0&s=7611',
