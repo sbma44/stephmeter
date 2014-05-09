@@ -38,3 +38,4 @@ local_settings.py
 runkeeper-php/settings.php
 .DS_Store
 runkeeper_tokens/*
+pwm_calibrate
