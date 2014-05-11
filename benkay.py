@@ -29,11 +29,11 @@ def watch_mode(meter):
     while True:
         delta = encoder.get_cycles()
         if delta!=0:
-            print "rotate %d" % delta
-            old_mode = meter.mode
-            meter.mode = (meter.mode + delta) % len(meter.MODES)
-            if old_mode!=meter.mode:
+            old_mode = meter.current_mode
+            meter.current_mode = (meter.current_mode + delta) % len(meter.MODES)
+            if old_mode!=meter.current_mode:
                 meter.set_led()
+        time.sleep(0.01)
      
 class BenKayMeter(object):
     """ Measures things that Ben & Kay might like """
@@ -60,7 +60,6 @@ class BenKayMeter(object):
             self.tlc = tlc5940.TLC5940(gsclkpin=GSCLKPIN, blankpin=BLANKPIN)
             self.tlc.writeAllDC(0)
 
-            # self.led_thread = Thread(set_led, self)
             self.mode_thread = Thread(watch_mode, self)    
 
             self.set_led()        
@@ -77,7 +76,7 @@ class BenKayMeter(object):
 
     def set_led(self):
         register = ([0, 0, 0] * self.current_mode) + [63, 63, 63] + ([0, 0, 0] * (len(self.MODES) - (self.current_mode + 1)))
-        self.tlc.writeDC(register)
+        self.tlc.writeDC(([0] + register)[:-1])
 
     def main(self):     
 
