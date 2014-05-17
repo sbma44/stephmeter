@@ -2,6 +2,7 @@ from settings import *
 import scrapelib
 import time
 import re
+import json
 from BeautifulSoup import BeautifulSoup
 from soupselect import select
 
@@ -21,32 +22,11 @@ class NextbusPredictor(object):
 	def _clean_prediction_html(self, html):
 		return re.sub(r'&nbsp;','', re.sub(r'<[^>]*>','',(str(html)), flags=re.MULTILINE|re.DOTALL)).strip()
 
-	def _extract_predictions(self, html):
-		if '<p class="predictHead"><nobr><span id=\'i18n_en\'>No current prediction' in html:
-			return None
-		else:
-			predictions = []
-			soup = BeautifulSoup(html)	
-
-			# get the primary/imminent prediction		
-			try:
-				minutes = self._clean_prediction_html(select(soup, '.predictionNumberForFirstPred')[0])
-			except:
-				return None
-			if ('departing' in minutes.lower()) or ('arriving' in minutes.lower()):
-				predictions.append(0)
-			else:
-				predictions.append(int(minutes))
-
-			# get the other predictions
-			for m in select(soup, '.predictionNumberForOtherPreds'):
-				m = self._clean_prediction_html(m)
-				try:
-					predictions.append(int(m))
-				except:
-					pass
-
-			return predictions
+	def _extract_predictions(self, data):
+		predictions = []
+		for p in data[0]['values']:
+			predictions.append(p['minutes'])
+		return predictions
 
 	def refresh(self, route):
 		"""Force a refresh of a specific route"""
@@ -55,13 +35,17 @@ class NextbusPredictor(object):
 		url = NEXTBUS_URLS.get(str(route), False)
 		if not url:
 			return
+		if callable(url):
+			url = url()
 
 		try:
-			html = self.scraper.urlopen(url)
+			self.scraper.headers['Referer'] = 'http://www.nextbus.com/'
+			json_response = self.scraper.urlopen(url)
+			data = json.loads(json_response)
 		except:
 			return # fail silently. bad, I know.
 
-		self.predictions[route] = self._extract_predictions(html)
+		self.predictions[route] = self._extract_predictions(data)
 		self.last_refresh[route] = time.time()
 
 	def _get_query_frequency(self, last_prediction_in_minutes):
@@ -110,6 +94,11 @@ class NextbusPredictor(object):
 		matching_arrival = sorted(arrivals, key=lambda x: x[0])[n]
 		return (matching_arrival[1], self._adjust_prediction_for_elapsed_time(matching_arrival[0], matching_arrival[1]))
 
+
+def main():
+	nb = NextbusPredictor(['G2'])
+	nb.refresh('G2')
+	print nb.predictions
 
 if __name__ == '__main__':
 	main()
