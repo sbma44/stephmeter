@@ -25,14 +25,20 @@ class Thread(threading.Thread):
         self.start()
 
 def watch_mode(meter):
-    encoder = gaugette.rotary_encoder.RotaryEncoder(ROTARYENCODERPIN_A, ROTARYENCODERPIN_B)
+    """ Function that monitors the rotary encoder for input in a separate thread """
+    encoder = gaugette.rotary_encoder.RotaryEncoder(ROTARYENCODERPIN_A, ROTARYENCODERPIN_B)    
     while True:
+        # checks w/ default 4 detents per position
         delta = encoder.get_cycles()
+
         if delta!=0:
             old_mode = meter.current_mode
             meter.current_mode = (meter.current_mode + delta) % len(meter.MODES)
             if old_mode!=meter.current_mode:
-                meter.set_led()
+                meter.set_leds_to_mode()
+                meter.update_leds()
+        
+        # minimal sleep value to lower CPU load--checks @ 100Hz
         time.sleep(0.01)
      
 class BenKayMeter(object):
@@ -46,37 +52,76 @@ class BenKayMeter(object):
         self.DEBUG = '--debug' in map(lambda x: x.lower().strip(), sys.argv)
 
         self.current_mode = 0
+        self.leds = [[0,0,0]] * len(self.MODES)
+        self.meter_value = 0
 
         if self.DEBUG:
             print 'Entering debug mode...'
         else:            
-            #self.p = pwm_calibrate.PWMCalibrator(calibration_file=CALIBRATION_FILE, smoothing=True)
-            #self.p.load()
-            #self.p_range = p.get_range()
+            self.meter_a = pwm_calibrate.PWMCalibrator(pin=METERPIN_A, calibration_file=CALIBRATION_FILE_A, smoothing=True)
+            self.meter_a.load()
+            self.meter_a.set(0)
 
-            # self.encoder_worker = gaugette.rotary_encoder.RotaryEncoder.Worker(ROTARYENCODERPIN_A, ROTARYENCODERPIN_B)
-            # self.encoder_worker.start()
+            self.meter_b = pwm_calibrate.PWMCalibrator(pin=METERPIN_B, calibration_file=CALIBRATION_FILE_B, smoothing=True)
+            self.meter_b.load()
+            self.meter_b.set(0)        
 
             self.tlc = tlc5940.TLC5940(gsclkpin=GSCLKPIN, blankpin=BLANKPIN)
             self.tlc.writeAllDC(0)
 
             self.mode_thread = Thread(watch_mode, self)    
 
-            self.set_led()        
+            self.set_leds_to_mode()
+            self.update_leds()      
 
+    def set_meter(self, value):
+        # determine which GPIO is ground and which will add voltage
+        if value>0:
+            vcc_meter = self.meter_a
+            ground_meter = self.meter_b
+        else:
+            vcc_meter = self.meter_b
+            ground_meter = self.meter_a
 
-    def check_mode(self):
-        turns = self.encoder_worker.encoder.get_cycles()
-        old_mode = self.current_mode
-        self.current_mode = (self.current_mode + turns) % len(self.MODES)    
-        if old_mode!=self.current_mode:
-            print "new mode: %d" % self.current_mode
-            self.set_led()
+        # are we going to zero? just adjust both, then; no harm
+        if value==0:
+            vcc_meter.set(0)
+            ground_meter.set(0)
 
+        # if the value currently zero? if so, no need to walk back
+        elif self.meter_value==0:
+            ground_meter.set(0)
+            vcc_meter.set(abs(value))
+        else:
+            # are we staying on the same side of the meter?
+            # if so, just adjust vcc
+            same_direction = (((value/abs(value)) * (self.meter_value/abs(self.meter_value)))==1)
+            if not same_direction:
+                ground_meter.set(0)
+            vcc_meter.set(abs(value))
 
-    def set_led(self):
-        register = ([0, 0, 0] * self.current_mode) + [63, 63, 63] + ([0, 0, 0] * (len(self.MODES) - (self.current_mode + 1)))
-        self.tlc.writeDC(([0] + register)[:-1])
+        self.meter_value = value
+
+    def set_leds_to_mode(self):
+        """ Make the LED register reflect the current mode """
+        self.leds = [[0,0,0]] * len(self.MODES)
+        self.leds[self.current_mode] = [63, 63, 63]
+
+    def update_leds(self):
+        """ Shift contents of LED register into the TLC5940 """
+        register = []
+        for l in self.leds:
+            for b in l:
+                register.append(b)        
+        
+        # fill out register
+        for i in range(len(register), self.tlc.numberof_leds-1):
+            register.append(0)
+
+        # correct for 1-pin offset of breakout board config
+        register = [0] + register
+
+        self.tlc.writeDC(register)
 
     def main(self):     
 

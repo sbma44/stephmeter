@@ -13,7 +13,9 @@
 
 import wiringpi, spidev, bitstring, logging
 from time import sleep
+
 logger = logging.getLogger(__name__)
+logging.basicConfig()
 
 class TLC5940 (object):
   def __init__(self, numberof_TLC5940 = 1, spibus = 0, spidevice = 0, gsclkpin = 4, blankpin = 3, vprgpin = 5):

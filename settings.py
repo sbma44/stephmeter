@@ -15,7 +15,8 @@ GSCLKPIN = 3
 METERPIN_A = 4
 METERPIN_B = 5
 
-CALIBRATION_FILE = '%s/calibration.json' % PROJECT_HOME
+CALIBRATION_FILE_A = '%s/calibration_4.json' % PROJECT_HOME
+CALIBRATION_FILE_B = '%s/calibration_5.json' % PROJECT_HOME
 
 TIMEOUT = 300 # 5 minutes
 
