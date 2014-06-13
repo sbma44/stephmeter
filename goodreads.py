@@ -69,8 +69,9 @@ class GoodReadsInterface(object):
 
 def main():
     gr = GoodReadsInterface()
-    stats = gr.fetch_stats(GOODREADS_TOM_URL)
-    print stats
+    for (name, url) in {'tom': GOODREADS_TOM_URL, 'ben': GOODREADS_BEN_URL, 'kay': GOODREADS_KAY_URL}.items():
+        stats = gr.fetch_stats(url)
+        print name, stats
 
 if __name__ == '__main__':
     main()
