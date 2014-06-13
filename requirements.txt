@@ -1,8 +1,15 @@
 BeautifulSoup==3.2.1
 argparse==1.2.1
+bitstring==3.1.3
+cssselect==0.9.1
+gaugette==1.2
+lxml==3.3.5
+mechanize==0.2.5
+pwm-calibrate==0.3
 pyserial==2.6
 requests==2.0.0
 scrapelib==0.9.0
+spidev==2.0
 wiringpi==1.0.5
 wiringpi2==1.0.10
 wsgiref==0.1.2

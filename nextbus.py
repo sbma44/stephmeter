@@ -10,17 +10,28 @@ class NextbusPredictor(object):
 	"""Tracks Nextbus arrival times"""
 	def __init__(self, routes):
 		super(NextbusPredictor, self).__init__()
+		self.scraper = scrapelib.Scraper(requests_per_minute=10, follow_robots=False)
+
+		self.api_key = self.get_api_key()
+
 		self.routes = map(lambda x: str(x), routes)
 		self.predictions = {}
-		self.last_refresh = {}
-		self.scraper = scrapelib.Scraper(requests_per_minute=10, follow_robots=False)
+		self.last_refresh = {}		
 		for r in self.routes:
 			self.predictions[r] = None
-			self.last_refresh[r] = None
-			self.refresh(r)
+			self.last_refresh[r] = 0
+			self.refresh(r)		
 	
 	def _clean_prediction_html(self, html):
 		return re.sub(r'&nbsp;','', re.sub(r'<[^>]*>','',(str(html)), flags=re.MULTILINE|re.DOTALL)).strip()
+
+	def get_api_key(self):
+		re_api = re.compile(r'<p id=\'api_key\' class=\'hide\'>\?key=([abcdef0123456789]+)')
+		html = self.scraper.urlopen('http://www.nextbus.com')
+		matches = re_api.search(html)
+		if matches is None:
+			raise Exception("Could not find Nextbus key")
+		return matches.group(1)
 
 	def _extract_predictions(self, data):
 		predictions = []
@@ -37,14 +48,23 @@ class NextbusPredictor(object):
 			return
 		if callable(url):
 			url = url()
+		url = "%s&key=%s&timestamp=%d" % (url, self.api_key, int(time.time() * 1000))
 
-		try:
-			self.scraper.headers['Referer'] = 'http://www.nextbus.com/'
-			json_response = self.scraper.urlopen(url)
-			data = json.loads(json_response)
-		except:
-			return # fail silently. bad, I know.
+		attempts = 0
+		json_response = '[]'
+		while attempts < 3 and json_response == '[]':
+			try:
+				self.scraper.headers['Referer'] = 'http://www.nextbus.com/'
+				json_response = self.scraper.urlopen(url)
+			except scrapelib.HTTPError, e:
+				print 'got http error: %s' % str(e)
+				if e.response.code == 401:
+					self.api_key = self.get_api_key()
+				attempts += 1
+			except Exception, e:
+				raise e
 
+		data = json.loads(json_response)
 		self.predictions[route] = self._extract_predictions(data)
 		self.last_refresh[route] = time.time()
 

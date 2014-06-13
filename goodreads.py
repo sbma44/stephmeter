@@ -11,7 +11,7 @@ class GoodReadsInterface(object):
     """Collects reader stats from friends on Goodreads"""
     def __init__(self):
         super(GoodReadsInterface, self).__init__()
-        self.login()    
+        self.login() 
 
     def login(self):
         # Browser
