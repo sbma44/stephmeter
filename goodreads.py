@@ -68,8 +68,8 @@ class GoodReadsInterface(object):
         return stats
 
 def main():
-    br = login()
-    stats = fetch_stats(br, GOODREADS_TOM_URL)
+    gr = GoodReadsInterface()
+    stats = gr.fetch_stats(GOODREADS_TOM_URL)
     print stats
 
 if __name__ == '__main__':
