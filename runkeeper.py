@@ -42,7 +42,7 @@ class RunKeeperInterface(object):
 		for activity in self.activity.get(token_name, {}).get('items', []):			
 			# ensure activity is running
 			if activity.get('type').lower()=='running':
-				# ensure activity is from present week
+				# ensure activity is from present week				
 				activity_date = self._convert_date_string(activity.get('start_time', 'Wed, 1 Jan 2014 00:00:00'))				
 				if int(datetime.datetime.now().strftime('%U'))==int(activity_date.strftime('%U')):
 					mileage += self._meters_to_miles(float(activity.get('total_distance')))
@@ -51,4 +51,5 @@ class RunKeeperInterface(object):
 if __name__ == '__main__':
 	rki = RunKeeperInterface()
 	rki.refresh_all()
-	print rki.calculate_mileage('stephstepht')
+	for t in rki.tokens:
+		print t, rki.calculate_mileage(t)
