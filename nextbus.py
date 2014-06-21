@@ -78,6 +78,10 @@ class NextbusPredictor(object):
 		else:
 			return 60
 
+	def refresh_all(self):
+		for r in self.routes:
+			self.refresh(r)
+
 	def refresh_if_necessary(self):
 		"""Only refresh prediction times intermittently -- don't hammer"""
 		for r in self.routes:

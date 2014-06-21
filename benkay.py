@@ -79,23 +79,23 @@ class BenKayMeter(object):
 
         if self.DEBUG:
             print 'Entering debug mode...'
-        else:            
-            self.meter_a = pwm_calibrate.PWMCalibrator(pin=METERPIN_A, calibration_file=CALIBRATION_FILE_A, smoothing=True)
-            self.meter_a.load()
-            self.meter_a.set(0)
+        
+        self.meter_a = pwm_calibrate.PWMCalibrator(pin=METERPIN_A, calibration_file=CALIBRATION_FILE_A, smoothing=True)
+        self.meter_a.load()
+        self.meter_a.set(0)
 
-            self.meter_b = pwm_calibrate.PWMCalibrator(pin=METERPIN_B, calibration_file=CALIBRATION_FILE_B, smoothing=True)
-            self.meter_b.load()
-            self.meter_b.set(0)        
+        self.meter_b = pwm_calibrate.PWMCalibrator(pin=METERPIN_B, calibration_file=CALIBRATION_FILE_B, smoothing=True)
+        self.meter_b.load()
+        self.meter_b.set(0)        
 
-            self.tlc = tlc5940.TLC5940(gsclkpin=GSCLKPIN, blankpin=BLANKPIN)
-            self.tlc.writeAllDC(0)
+        self.tlc = tlc5940.TLC5940(gsclkpin=GSCLKPIN, blankpin=BLANKPIN)
+        self.tlc.writeAllDC(0)
 
-            self.mode_thread = Thread(watch_mode, self)   
-            self.led_thread = Thread(manage_leds, self) 
+        self.mode_thread = Thread(watch_mode, self)   
+        self.led_thread = Thread(manage_leds, self) 
 
-            self.set_leds_to_mode()
-            self.update_leds()      
+        self.set_leds_to_mode()
+        self.update_leds()      
 
     def start_blinking(self):
         self.led_backup_state = list(self.leds)
@@ -177,19 +177,31 @@ class BenKayMeter(object):
         """ Primary loop """    
 
         nb = nextbus.NextbusPredictor(NEXTBUS_ROUTES)
-        # rk = runkeeper.RunKeeperInterface()
+        rk = runkeeper.RunKeeperInterface()
         gr = goodreads.GoodReadsInterface()
         bs = bikeshare.BikeShareInterface(BIKESHARE_XML_URL, BIKESHARE_STATION_IDS)
 
         while True:
 
             newly_in_mode = True
+            self.set_meter(0)
+            self.set_color()
+            self.update_leds()
 
             while self.current_mode == self.MODES.index('BIKESHARE'):                
+
+                if self.DEBUG:
+                    print str(datetime.datetime.now()), 'bikeshare mode'
 
                 if newly_in_mode:
                     self.set_meter(0)
                     self.set_color()
+                    self.update_leds() 
+
+                    maintain_mode = self.sleep_until_input(1)
+                    if not maintain_mode:
+                        break
+                                       
                     self.start_blinking()                    
                 
                 bs.refresh()
@@ -198,8 +210,9 @@ class BenKayMeter(object):
                     self.stop_blinking()
                     newly_in_mode = False
 
+                maintain_mode = True
                 start_time = time.time()
-                while time.time() < (start_time + BIKESHARE_REFRESH_RATE):
+                while time.time() < (start_time + BIKESHARE_REFRESH_RATE) and maintain_mode:
 
                     # set LED color
                     bike_sum = 0
@@ -228,14 +241,68 @@ class BenKayMeter(object):
                         if not maintain_mode:
                             break
 
-            while self.current_mode == self.MODES.index('NEXTBUS'):   
-                
+            if not newly_in_mode:
+                continue
+
+            while self.current_mode == self.MODES.index('RUNKEEPER'):                
+
+                if self.DEBUG:
+                    print str(datetime.datetime.now()), 'runkeeper mode'
+
                 if newly_in_mode:
                     self.set_meter(0)
                     self.set_color()
-                    self.start_blinking()
+                    self.update_leds() 
 
-                nb.refresh_if_necessary()
+                    maintain_mode = self.sleep_until_input(1)
+                    if not maintain_mode:
+                        break
+
+                    self.start_blinking()                    
+                
+                rk.refresh_all()
+
+                if newly_in_mode:
+                    self.stop_blinking()
+                    newly_in_mode = False
+
+                start_time = time.time()
+                maintain_mode = True
+                while time.time() < (start_time + RUNKEEPER_REFRESH_RATE) and maintain_mode:
+
+                    # cycle through every available token's runkeeper mileage
+                    for (i, rkt) in enumerate(rk.tokens.keys()):
+                        miles = rk.calculate_mileage(rkt)
+                        self.set_meter((1, -1)[i % 2] * miles)                        
+
+                        # sleep, but allow breaks
+                        maintain_mode = self.sleep_until_input(5)
+                        if not maintain_mode:
+                            break
+
+            if not newly_in_mode:
+                continue
+
+            while self.current_mode == self.MODES.index('NEXTBUS'):   
+                
+                if self.DEBUG:
+                    print str(datetime.datetime.now()), 'nextbus mode'
+
+                if newly_in_mode:
+                    self.set_meter(0)
+                    self.set_color()
+                    self.update_leds()
+                    
+                    maintain_mode = self.sleep_until_input(1)
+                    if not maintain_mode:
+                        break
+
+                    self.start_blinking()
+                    nb.refresh_all()
+                    
+
+                else:
+                    nb.refresh_if_necessary()
 
                 if newly_in_mode:
                     self.stop_blinking()
@@ -278,8 +345,14 @@ class BenKayMeter(object):
                     if not maintain_mode:
                         break  
 
+            if not newly_in_mode:
+                continue
+
             while self.current_mode == self.MODES.index('GOODREADS'):   
                 
+                if self.DEBUG:
+                    print str(datetime.datetime.now()), 'goodreads mode'
+
                 if newly_in_mode:
                     # last_update = 0
                     ben_stats = {}
@@ -287,6 +360,12 @@ class BenKayMeter(object):
 
                     self.set_meter(0)
                     self.set_color()
+                    self.update_leds()
+
+                    maintain_mode = self.sleep_until_input(1)
+                    if not maintain_mode:
+                        break
+
                     self.start_blinking()
 
                 # refresh if necessary

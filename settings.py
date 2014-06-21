@@ -18,6 +18,9 @@ BIKESHARE_XML_URL = 'http://www.capitalbikeshare.com/data/stations/bikeStations.
 BIKESHARE_STATION_IDS = [31636, 31509]
 BIKESHARE_REFRESH_RATE = 120
 
+def RUNKEEPER_TOKEN_DIRECTORY():
+	return '%s/runkeeper_tokens' % PROJECT_HOME
+RUNKEEPER_REFRESH_RATE = 600
 
 ROTARYENCODERPIN_A = 0
 ROTARYENCODERPIN_B = 7
@@ -33,9 +36,6 @@ CALIBRATION_FILE_A = '%s/calibration_4.json' % PROJECT_HOME
 CALIBRATION_FILE_B = '%s/calibration_5.json' % PROJECT_HOME
 
 TIMEOUT = 300 # 5 minutes
-
-def RUNKEEPER_TOKEN_DIRECTORY():
-	return '%s/runkeeper_tokens' % PROJECT_HOME
 
 try:
 	from local_settings import *
