@@ -1,8 +1,5 @@
-BeautifulSoup==3.2.1
-argparse==1.2.1
-pyserial==2.6
-requests==2.0.0
-scrapelib==0.9.0
-wiringpi==1.0.5
-wiringpi2==1.0.10
-wsgiref==0.1.2
+paho-mqtt==1.5.0
+pkg-resources==0.0.0
+pyserial==3.4
+wiringpi==2.60.0
+wiringpi2==2.32.3

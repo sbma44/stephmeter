@@ -16,18 +16,18 @@ class LED(object):
     self.serial.write(chr(0b11111111))
 
   def set(self, r, g, b):
-    self.serial.write('R')
+    self.serial.write(b'R')
     x = self._get_bytes(r)
-    self.serial.write(x[0])
-    self.serial.write(x[1])
+    self.serial.write(x[0].encode('ascii'))
+    self.serial.write(x[1].encode('ascii'))
 
-    self.serial.write('G')
+    self.serial.write(b'G')
     x = self._get_bytes(g)
-    self.serial.write(x[0])
-    self.serial.write(x[1])
+    self.serial.write(x[0].encode('ascii'))
+    self.serial.write(x[1].encode('ascii'))
 
-    self.serial.write('B')
+    self.serial.write(b'B')
     x = self._get_bytes(b)
-    self.serial.write(x[0])
-    self.serial.write(x[1])
+    self.serial.write(x[0].encode('ascii'))
+    self.serial.write(x[1].encode('ascii'))
 
