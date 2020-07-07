@@ -1,13 +1,11 @@
-NEXTBUS_URLS = {
-	'42': 'http://www.nextbus.com/predictor/fancyBookmarkablePredictionLayer.shtml?a=wmata&stopId=1002070&r=42&d=42_42_0&s=7611',
-	'43': 'http://www.nextbus.com/predictor/fancyBookmarkablePredictionLayer.shtml?a=wmata&r=43&d=43_43_0&s=7611'
-}
-
 SERIAL_DEVICE = '/dev/ttyAMA0'
 SERIAL_SPEED = 115200
 
-CALIBRATION_FILE = '/home/pi/Devel/stephmeter/calibration.json'
+CALIBRATION_FILE = '/home/pi/stephmeter/calibration.json'
 
 TIMEOUT = 300 # 5 minutes
 
-NEXTBUS_ROUTES = [42, 43]
+MQTT_SERVER = '192.168.1.2'
+MQTT_PORT = 1883
+MQTT_TOPIC_PWM = 'traccar/eta'
+MQTT_TOPIC_LED = 'traccar/led'
