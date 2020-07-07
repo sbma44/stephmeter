@@ -6,6 +6,8 @@ from settings import *
 
 if __name__ == '__main__':
     l = led.LED(SERIAL_DEVICE, SERIAL_SPEED)
+    l.set(0, 100, 0)
+
     p = pwm_calibrate.PWMCalibrator(calibration_file=CALIBRATION_FILE, smoothing=True)
     p.load()
     p_range = p.get_range()
@@ -25,7 +27,8 @@ if __name__ == '__main__':
             p.setPWM(val)
         elif message.topic == MQTT_TOPIC_LED:
             l = userdata['led']
-            l.set(message.payload[0], message.payload[1], message.payload[2])
+            rgb = [int(x) for x in message.payload.decode('ascii').split(',')]
+            l.set(rgb[0], rgb[1], rgb[2])
 
     mqtt_client = mqtt.Client('stephmeter', userdata={'pwm': p, 'led': l})
     mqtt_client.on_message = on_message
